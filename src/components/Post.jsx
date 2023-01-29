@@ -1,28 +1,74 @@
-import styles from './Post.module.css'
+import { format, formatDistanceToNow } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
+import { useState } from 'react';
+import { Avatar } from './Avatar';
+import { Comment } from './Comment';
+import styles from './Post.module.css';
 
-export function Post(){
+
+export function Post({ author, publishedAt, content }){  
+    const publisedDateFormated = format(publishedAt, "d 'de' LLLL 'às' HH:mm'h'", {
+        locale:ptBR
+    })
+    const publishedDateRelativeToNow = formatDistanceToNow(publishedAt,{
+        locale:ptBR,
+        addSuffix:true
+    })
+    const [comments, setComments] = useState([
+        'Post legal'
+    ]);
+    
+    const handleCreateNewComment = () => {
+        event.preventDefault()
+        const newCommentValue = event.target.comment.value;
+        setComments([...comments, newCommentValue]);
+        event.target.comment.value = '';
+        
+    }
+
     return (
         <article className={styles.post}>
-            <header className=''>
+            <header >
                 <div className={styles.author}>
-                    <img className={styles.avatar} src="https://github.com/enzoleao.png" alt="" />
+                    <Avatar  src={author.avatarUrl}  />
                     <div className={styles.authorInfo}>
-                        <strong>Enzo Leao</strong>
-                        <span>Web Developer</span>
+                        <strong>{author.name}</strong>
+                        <span>{author.role}</span>
                     </div>
                 </div>
 
 
-                <time title='11 de Maio às 8:13' dateTime='2022-05-11 08:13:25'>Publicado há 1h</time>
+                <time title={publisedDateFormated} dateTime={publishedAt.toISOString()}>
+                    {publishedDateRelativeToNow}
+                </time>
             </header>
             <div className={styles.content}>
-                <p>Olá galera</p>
+                {content.map(line => {
+                    if (line.type === 'paragraph'){
+                        return <p key={line.content}>{line.content}</p>
+                    }
+                    else if(line.type === 'link'){
+                        return <p key={line.content}>{line.content}</p>
+                    }
+                })}
+            </div>
 
-                <p>Acabei de enviar um projeto para meu portfolio</p>
+            <form onSubmit={handleCreateNewComment} className={styles.commentForm}>
+                <strong>Deixe seu feeedback</strong>
+                
+                <textarea
+                    name="comment" 
+                    placeholder="Deixe um comentário"
+                />
+                <footer>
+                    <button type='submit'>Publicar</button>
+                </footer>
+            </form>
 
-                <p><a href="https://portfolioenzo.vercel.app/projetos">portfolioenzo.vercel</a></p>
-
-                <p>Novos projetos sempre</p>
+            <div className={styles.commentList}>
+                {comments.map(comment => {
+                    return <Comment key={comment} content={comment} />
+                })}
             </div>
         </article>
     )
